@@ -40,9 +40,18 @@
   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   
+    <!-- Fix: disable sticky-kit so it can't apply inline position:fixed to #TOC.
+         CSS position:sticky (added in <style> above) handles pinning instead.
+         Must run AFTER sticky-kit.js loads so this is the final definition
+         before script.js's document.ready calls stick_in_parent(). -->
     <script src="https://cdn.jsdelivr.net/gh/diversen/pandoc-bootstrap-adaptive-template@959c3622/script.js"></script>
   
     <script src="https://cdn.jsdelivr.net/gh/diversen/pandoc-bootstrap-adaptive-template@959c3622/jquery.sticky-kit.js"></script>
+    <script type="text/javascript">
+      /* Neutralize sticky-kit: make stick_in_parent a no-op so #TOC never gets
+         inline position:fixed. CSS position:sticky pins it inside its column. */
+      if (window.jQuery) { jQuery.fn.stick_in_parent = function () { return this; }; }
+    </script>
     <meta name="generator" content="pandoc" />
 $for(author-meta)$
   <meta name="author" content="$author-meta$" />
@@ -69,6 +78,23 @@ $endif$
 $for(header-includes)$
   $header-includes$
 $endfor$
+
+  <!-- Fix: TOC/content overlap. sticky-kit pins #TOC with inline position:fixed,
+       which is viewport-anchored and slides over the floated .span9 content.
+       Neutralize it and pin the TOC with CSS position:sticky inside its own column. -->
+  <style type="text/css">
+    @media (min-width: 768px) {
+      #TOC {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 1em;
+        float: left;            /* stay as the left grid column */
+        max-height: calc(100vh - 2em);
+        overflow-y: auto;       /* scroll long TOCs instead of spilling over */
+      }
+      #TOC .well.toc { margin-bottom: 0; }
+    }
+  </style>
 </head>
 <body>
 
